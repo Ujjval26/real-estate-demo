@@ -81,7 +81,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const update: any = {};
     const allowed = [
       "title", "description", "price", "listingType", "propertyType",
