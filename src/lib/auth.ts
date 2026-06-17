@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { db } from "./db";
@@ -6,6 +6,9 @@ import type { UserRole } from "@/types";
 
 /**
  * JWT-based authentication helpers.
+ *
+ * Uses the `jose` library (edge-compatible) so the same verify function
+ * works in both middleware (edge runtime) and route handlers (node).
  *
  * Tokens are stored in an httpOnly cookie (`estateably_session`) so they
  * cannot be read by client-side JavaScript (XSS-resistant). The cookie is
@@ -15,17 +18,17 @@ import type { UserRole } from "@/types";
 const COOKIE_NAME = "estateably_session";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
-function getJwtSecret(): string {
+function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error(
       "JWT_SECRET must be set and at least 32 characters long. See .env.example.",
     );
   }
-  return secret;
+  return new TextEncoder().encode(secret);
 }
 
-export interface SessionPayload extends JwtPayload {
+export interface SessionPayload {
   sub: string; // user id
   email: string;
   role: UserRole;
@@ -46,17 +49,25 @@ export async function verifyPassword(
 }
 
 /** Sign a JWT containing the user's session payload. */
-export function signSessionToken(payload: SessionPayload): string {
-  return jwt.sign(payload, getJwtSecret(), {
-    expiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
-  });
+export async function signSessionToken(payload: SessionPayload): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(payload.sub)
+    .setIssuedAt()
+    .setExpirationTime(process.env.JWT_EXPIRES_IN ?? "7d")
+    .sign(getJwtSecret());
 }
 
 /** Verify a JWT and return its payload (or null if invalid/expired). */
-export function verifySessionToken(token: string): SessionPayload | null {
+export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
   try {
-    const payload = jwt.verify(token, getJwtSecret()) as SessionPayload;
-    return payload;
+    const { payload } = await jwtVerify(token, getJwtSecret());
+    return {
+      sub: payload.sub as string,
+      email: payload.email as string,
+      role: payload.role as UserRole,
+      name: payload.name as string,
+    };
   } catch {
     return null;
   }
@@ -111,8 +122,7 @@ export async function getCurrentUser() {
 }
 
 /**
- * Require that a user is logged in. Throws a Next.js-notFound-style error
- * if not — call from protected pages / route handlers.
+ * Require that a user is logged in. Throws an Error with a clear code if not.
  *
  * Usage:
  *   const user = await requireUser();

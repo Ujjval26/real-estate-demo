@@ -26,6 +26,7 @@ const PUBLIC_PATHS = [
   "/faqs",
   "/terms",
   "/privacy",
+  "/compare",
   "/forgot-password",
 ];
 
@@ -59,7 +60,7 @@ export async function middleware(req: NextRequest) {
 
   // Read & verify the session cookie.
   const token = req.cookies.get("estateably_session")?.value;
-  const session = token ? verifySessionToken(token) : null;
+  const session = token ? await verifySessionToken(token) : null;
 
   // API routes: return JSON 401 instead of redirecting.
   if (pathname.startsWith("/api/")) {

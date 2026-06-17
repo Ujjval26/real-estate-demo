@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compare, X } from "lucide-react";
+import { GitCompare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "estateably:compare";
@@ -99,7 +99,7 @@ export function CompareBar() {
     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white shadow-lg">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
         <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-          <Compare className="h-4 w-4 text-primary" />
+          <GitCompare className="h-4 w-4 text-primary" />
           Compare ({items.length}/{MAX_ITEMS})
         </div>
         <div className="flex flex-1 items-center gap-2 overflow-x-auto">

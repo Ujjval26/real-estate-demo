@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = signSessionToken({
+    const token = await signSessionToken({
       sub: user.id,
       email: user.email,
       role: user.role as "buyer" | "agent" | "admin",

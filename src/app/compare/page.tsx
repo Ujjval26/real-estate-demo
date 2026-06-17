@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Compare, X, Bed, Bath, MapPin, Calendar, Zap, TreePine, Car, Building2, Home as HomeIcon } from "lucide-react";
+import { GitCompare, X, Bed, Bath, MapPin, Calendar, Zap, TreePine, Car, Building2, Home as HomeIcon } from "lucide-react";
 import { formatPropertyPrice } from "@/lib/format";
 import { RemoveFromCompareButton } from "./remove-button";
 
@@ -41,7 +41,7 @@ export default async function ComparePage({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-900">
-              <Compare className="h-6 w-6 text-primary" /> Compare properties
+              <GitCompare className="h-6 w-6 text-primary" /> Compare properties
             </h1>
             <p className="mt-1 text-sm text-slate-600">
               Compare up to 4 properties side by side.
@@ -55,7 +55,7 @@ export default async function ComparePage({
         {ordered.length === 0 ? (
           <Card className="mt-6">
             <CardContent className="p-12 text-center">
-              <Compare className="mx-auto h-10 w-10 text-slate-300" />
+              <GitCompare className="mx-auto h-10 w-10 text-slate-300" />
               <p className="mt-3 text-sm text-slate-500">
                 No properties selected to compare.
               </p>
