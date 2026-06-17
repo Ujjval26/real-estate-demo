@@ -10,6 +10,7 @@ import { MortgageCalculator } from "@/components/mortgage-calculator";
 import { StampDutyCalculator } from "@/components/stamp-duty-calculator";
 import { RequestViewingForm } from "@/components/request-viewing-form";
 import { SimilarProperties } from "@/components/similar-properties";
+import { AgentReviews } from "@/components/agent-reviews";
 import { formatGBP, formatPropertyPrice } from "@/lib/format";
 import { Bed, Bath, MapPin, Home, Calendar, Zap, TreePine, Car, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -228,6 +229,7 @@ export default async function PropertyPage({
                 <p className="mt-2 text-xs text-slate-500">{property.enquiryCount} enquiries</p>
               )}
             </div>
+            <AgentReviews agentId={property.agent.id} loggedIn={!!user} />
           </aside>
         </div>
 

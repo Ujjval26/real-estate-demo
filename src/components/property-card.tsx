@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Bed, Bath, MapPin, Home, Maximize } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Heart, Bed, Bath, MapPin, Home, Maximize, GitCompareArrows } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
 import { formatPropertyPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+const COMPARE_KEY = "estateably:compare";
+const COMPARE_MAX = 4;
 
 interface PropertyCardProps {
   property: {
@@ -23,15 +26,29 @@ interface PropertyCardProps {
     status: string;
     images: { imageUrl: string }[];
   };
-  /** Whether the current user has favourited this property. */
   favourited?: boolean;
-  /** Compact variant for dashboards. */
   compact?: boolean;
 }
 
 export function PropertyCard({ property, favourited: initialFav, compact }: PropertyCardProps) {
   const [fav, setFav] = useState(!!initialFav);
   const [pending, start] = useTransition();
+  const [inCompare, setInCompare] = useState(false);
+
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        const raw = localStorage.getItem(COMPARE_KEY);
+        const list: Array<{ id: string }> = raw ? JSON.parse(raw) : [];
+        setInCompare(list.some((i) => i.id === property.id));
+      } catch {
+        setInCompare(false);
+      }
+    };
+    refresh();
+    window.addEventListener("estateably:compare-changed", refresh);
+    return () => window.removeEventListener("estateably:compare-changed", refresh);
+  }, [property.id]);
 
   function toggleFav(e: React.MouseEvent) {
     e.preventDefault();
@@ -60,6 +77,38 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
     });
   }
 
+  function toggleCompare(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const raw = localStorage.getItem(COMPARE_KEY);
+      const list: Array<{ id: string; slug: string; title: string; price: number; listingType: string; cover?: string }> =
+        raw ? JSON.parse(raw) : [];
+      if (list.some((i) => i.id === property.id)) {
+        const next = list.filter((i) => i.id !== property.id);
+        localStorage.setItem(COMPARE_KEY, JSON.stringify(next));
+        setInCompare(false);
+        toast.success("Removed from compare");
+      } else {
+        if (list.length >= COMPARE_MAX) {
+          toast.error(`You can compare up to ${COMPARE_MAX} properties.`);
+          return;
+        }
+        const next = [...list, {
+          id: property.id, slug: property.slug, title: property.title,
+          price: property.price, listingType: property.listingType,
+          cover: property.images?.[0]?.imageUrl,
+        }];
+        localStorage.setItem(COMPARE_KEY, JSON.stringify(next));
+        setInCompare(true);
+        toast.success("Added to compare");
+      }
+      window.dispatchEvent(new Event("estateably:compare-changed"));
+    } catch {
+      toast.error("Could not update compare list.");
+    }
+  }
+
   const cover = property.images?.[0]?.imageUrl;
 
   return (
@@ -69,7 +118,6 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         {cover ? (
-           
           <img
             src={cover}
             alt={property.title}
@@ -88,14 +136,28 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
             </Badge>
           )}
         </div>
-        <button
-          onClick={toggleFav}
-          disabled={pending}
-          aria-label={fav ? "Remove from saved" : "Save property"}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm hover:bg-white hover:text-rose-600 disabled:opacity-50"
-        >
-          <Heart className={cn("h-4 w-4", fav && "fill-rose-500 text-rose-500")} />
-        </button>
+        <div className="absolute right-3 top-3 flex gap-1.5">
+          <button
+            onClick={toggleCompare}
+            aria-label={inCompare ? "Remove from compare" : "Add to compare"}
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-colors",
+              inCompare
+                ? "bg-primary text-primary-foreground"
+                : "bg-white/95 text-slate-700 hover:bg-white hover:text-primary",
+            )}
+          >
+            <GitCompareArrows className="h-4 w-4" />
+          </button>
+          <button
+            onClick={toggleFav}
+            disabled={pending}
+            aria-label={fav ? "Remove from saved" : "Save property"}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm hover:bg-white hover:text-rose-600 disabled:opacity-50"
+          >
+            <Heart className={cn("h-4 w-4", fav && "fill-rose-500 text-rose-500")} />
+          </button>
+        </div>
       </div>
       <div className={cn("p-4", compact && "p-3")}>
         <div className="flex items-baseline justify-between gap-2">
