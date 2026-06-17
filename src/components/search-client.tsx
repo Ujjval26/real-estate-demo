@@ -20,6 +20,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PropertyCard } from "@/components/property-card";
 import { PropertyMap } from "@/components/property-map";
+import { SaveSearchButton } from "@/components/save-search-button";
 import { formatGBP } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -368,6 +369,7 @@ export function SearchClient() {
                   <MapIcon className="h-4 w-4" />
                 </button>
               </div>
+              <SaveSearchButton />
             </div>
           </div>
 
