@@ -59,4 +59,7 @@ server.log
 
 # Local SQLite dev db (we use Turso in production)
 /db/*.db
-/db/*.db-journaltool-results/
+/db/*.db-journal
+
+# Tool output cache
+/tool-results/
