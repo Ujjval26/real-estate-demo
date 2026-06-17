@@ -1,0 +1,214 @@
+// ===========================================================================
+// Estateably — Real Estate Platform Prisma Schema
+// Database: Turso (libSQL / SQLite-compatible)
+// ===========================================================================
+// This schema defines every table required for the property platform:
+//   - users, properties, property_images
+//   - favourites, saved_searches
+//   - messages, viewing_requests, reviews
+// All money fields are stored as INTEGER (whole GBP) to avoid float issues.
+// JSON-shaped columns (features, search_criteria) are stored as TEXT and
+// parsed/serialised in the application layer.
+//
+// Naming: Prisma models use PascalCase (e.g. `Property`); the underlying SQL
+// tables use snake_case plural (e.g. `properties`). The mapping is done with
+// `@@map` (tables) and `@map` (columns) so the raw SQL schema (schema.sql)
+// and the Prisma client stay perfectly in sync.
+// ===========================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  role          String   @default("buyer") // buyer | agent | admin
+  phone         String?
+  emailVerified Boolean  @default(false) @map("email_verified")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  properties       Property[]
+  favourites       Favourite[]
+  savedSearches    SavedSearch[]
+  messagesSent     Message[]      @relation("MessagesSent")
+  messagesReceived Message[]      @relation("MessagesReceived")
+  viewingRequests  ViewingRequest[]
+  reviewsGiven     Review[]       @relation("ReviewsGiven")
+  reviewsReceived  Review[]       @relation("ReviewsReceived")
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Properties
+// ---------------------------------------------------------------------------
+model Property {
+  id           String   @id @default(cuid())
+  agentId      String   @map("agent_id")
+  title        String
+  slug         String   @unique
+  description  String
+  price        Int // whole GBP (£)
+  listingType  String   @default("sale") @map("listing_type") // sale | rent
+  propertyType String   @default("house") @map("property_type") // house | flat | bungalow | maisonette | cottage | land | other
+  bedrooms     Int      @default(1)
+  bathrooms    Int      @default(1)
+  receptionRooms Int    @default(1) @map("reception_rooms")
+  address      String
+  postcode     String
+  city         String
+  latitude     Float?
+  longitude    Float?
+  epcRating    String?  @map("epc_rating") // A–G
+  features     String   @default("[]") // JSON array stored as TEXT
+  floorPlanUrl String?  @map("floor_plan_url")
+  status       String   @default("draft") // draft | active | sold | let | withdrawn
+  isNewBuild   Boolean  @default(false) @map("is_new_build")
+  hasGarden    Boolean  @default(false) @map("has_garden")
+  hasParking   Boolean  @default(false) @map("has_parking")
+  viewCount    Int      @default(0) @map("view_count")
+  enquiryCount Int      @default(0) @map("enquiry_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  agent            User              @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  images           PropertyImage[]
+  favouritedBy     Favourite[]
+  messages         Message[]
+  viewingRequests  ViewingRequest[]
+
+  @@index([listingType])
+  @@index([city])
+  @@index([status])
+  @@index([price])
+  @@index([agentId])
+  @@map("properties")
+}
+
+// ---------------------------------------------------------------------------
+// Property Images
+// ---------------------------------------------------------------------------
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  imageUrl   String   @map("image_url")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+// ---------------------------------------------------------------------------
+// Favourites
+// ---------------------------------------------------------------------------
+model Favourite {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  propertyId String   @map("property_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@map("favourites")
+}
+
+// ---------------------------------------------------------------------------
+// Saved Searches (with optional email alerts)
+// ---------------------------------------------------------------------------
+model SavedSearch {
+  id                 String   @id @default(cuid())
+  userId             String   @map("user_id")
+  name               String?
+  searchCriteria     String   @default("{}") @map("search_criteria") // JSON
+  emailAlertsEnabled Boolean  @default(false) @map("email_alerts_enabled")
+  lastAlertedAt      DateTime? @map("last_alerted_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_searches")
+}
+
+// ---------------------------------------------------------------------------
+// Messages (between users and agents)
+// ---------------------------------------------------------------------------
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String   @map("sender_id")
+  receiverId  String   @map("receiver_id")
+  propertyId  String?  @map("property_id")
+  subject     String?
+  messageText String   @map("message_text")
+  readStatus  Boolean  @default(false) @map("read_status")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  sender   User      @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User      @relation("MessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([propertyId])
+  @@map("messages")
+}
+
+// ---------------------------------------------------------------------------
+// Viewing Requests
+// ---------------------------------------------------------------------------
+model ViewingRequest {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  propertyId    String   @map("property_id")
+  requestedDate DateTime @map("requested_date")
+  notes         String?
+  status        String   @default("pending") // pending | confirmed | declined | completed | cancelled
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([propertyId])
+  @@index([status])
+  @@map("viewing_requests")
+}
+
+// ---------------------------------------------------------------------------
+// Reviews / Ratings (for agents)
+// ---------------------------------------------------------------------------
+model Review {
+  id        String   @id @default(cuid())
+  agentId   String   @map("agent_id")
+  userId    String   @map("user_id")
+  rating    Int // 1–5
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agent User @relation("ReviewsReceived", fields: [agentId], references: [id], onDelete: Cascade)
+  user  User @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@map("reviews")
+}
