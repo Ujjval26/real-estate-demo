@@ -162,6 +162,11 @@ CREATE TABLE IF NOT EXISTS "inquiries" (
 );
 CREATE INDEX IF NOT EXISTS "inquiries_status_idx" ON "inquiries"("status");
 CREATE INDEX IF NOT EXISTS "inquiries_created_at_idx" ON "inquiries"("created_at");
+
+CREATE TABLE IF NOT EXISTS "site_settings" (
+    "key" TEXT NOT NULL PRIMARY KEY,
+    "value" TEXT NOT NULL
+);
 `;
 
 async function main() {

@@ -1,147 +1,162 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2, Search as SearchIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { UserActions } from "./user-actions";
-import { ArrowLeft, Users as UsersIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import Link from "next/link";
 
-export default async function AdminUsersPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; role?: string }>;
-}) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/admin/users");
-  if (user.role !== "admin") redirect("/");
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone: string | null;
+  emailVerified: boolean;
+  createdAt: string;
+}
 
-  const { q, role } = await searchParams;
+export default function AdminUsersPage() {
+  const router = useRouter();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-   
-  const where: any = {};
-  if (q) {
-    where.OR = [
-      { name: { contains: q } },
-      { email: { contains: q } },
-    ];
+  function fetchUsers() {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    params.set("page", String(page));
+
+    fetch(`/api/admin/users?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) router.push("/admin/login");
+        else {
+          setUsers(d.users);
+          setTotalPages(d.pagination.totalPages);
+        }
+      })
+      .catch(() => toast.error("Failed to load users"))
+      .finally(() => setLoading(false));
   }
-  if (role && ["buyer", "agent", "admin"].includes(role)) {
-    where.role = role;
+
+  useEffect(() => { fetchUsers(); }, [page]);
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    setPage(1);
+    fetchUsers();
   }
 
-  const users = await db.user.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    select: {
-      id: true, name: true, email: true, role: true, phone: true,
-      emailVerified: true, createdAt: true,
-      _count: {
-        select: {
-          properties: true,
-          favourites: true,
-          messagesSent: true,
-          reviewsGiven: true,
-        },
-      },
-    },
-  });
+  async function changeRole(id: string, role: string) {
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      toast.success("Role updated");
+      fetchUsers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    }
+  }
+
+  async function deleteUser(id: string, name: string) {
+    if (!confirm(`Delete user "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      toast.success("User deleted");
+      fetchUsers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete");
+    }
+  }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <SiteHeader user={{ name: user.name, role: user.role }} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-        <Button asChild variant="ghost" size="sm" className="mb-4">
-          <Link href="/admin"><ArrowLeft className="mr-1 h-4 w-4" /> Back to admin</Link>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Users</h1>
+          <p className="text-sm text-slate-500">Manage registered users.</p>
+        </div>
+        <Button asChild>
+          <Link href="/admin/users/new"><Plus className="mr-1 h-4 w-4" /> Add User</Link>
         </Button>
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-900">
-          <UsersIcon className="h-6 w-6 text-primary" /> Manage users
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {users.length} user{users.length === 1 ? "" : "s"} found.
-        </p>
+      </div>
 
-        {/* Filter form */}
-        <form className="mt-4 flex flex-wrap gap-2">
-          <input
-            type="text"
-            name="q"
-            defaultValue={q || ""}
-            placeholder="Search by name or email…"
-            className="flex-1 rounded-md border border-slate-200 px-3 py-1.5 text-sm"
-          />
-          <select
-            name="role"
-            defaultValue={role || ""}
-            className="rounded-md border border-slate-200 px-3 py-1.5 text-sm"
-          >
-            <option value="">All roles</option>
-            <option value="buyer">Buyers</option>
-            <option value="agent">Agents</option>
-            <option value="admin">Admins</option>
-          </select>
-          <Button type="submit" size="sm">Filter</Button>
-        </form>
+      <form onSubmit={handleSearch} className="relative max-w-sm">
+        <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Input placeholder="Search by name or email…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      </form>
 
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle className="text-base">Users</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {users.length === 0 ? (
-              <p className="p-8 text-center text-sm text-slate-500">No users match your filters.</p>
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead className="border-b border-slate-200 bg-slate-50 text-left">
+            <tr>
+              <th className="px-4 py-3 font-medium text-slate-600">Name</th>
+              <th className="px-4 py-3 font-medium text-slate-600">Email</th>
+              <th className="px-4 py-3 font-medium text-slate-600">Role</th>
+              <th className="px-4 py-3 font-medium text-slate-600">Joined</th>
+              <th className="px-4 py-3 font-medium text-slate-600">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {loading ? (
+              <tr><td colSpan={5} className="px-4 py-12 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-slate-300" /></td></tr>
+            ) : users.length === 0 ? (
+              <tr><td colSpan={5} className="px-4 py-12 text-center text-slate-400">No users found.</td></tr>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3">Name</th>
-                      <th className="px-4 py-3">Role</th>
-                      <th className="hidden px-4 py-3 md:table-cell">Phone</th>
-                      <th className="hidden px-4 py-3 sm:table-cell">Listings</th>
-                      <th className="hidden px-4 py-3 sm:table-cell">Joined</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {users.map((u) => (
-                      <tr key={u.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-slate-900">{u.name}</p>
-                          <p className="text-xs text-slate-500">{u.email}</p>
-                          {!u.emailVerified && (
-                            <Badge variant="outline" className="mt-0.5 text-[10px]">Unverified</Badge>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge variant={
-                            u.role === "admin" ? "default" :
-                            u.role === "agent" ? "secondary" :
-                            "outline"
-                          } className="capitalize">{u.role}</Badge>
-                        </td>
-                        <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{u.phone || "—"}</td>
-                        <td className="hidden px-4 py-3 text-slate-600 sm:table-cell">{u._count.properties}</td>
-                        <td className="hidden px-4 py-3 text-xs text-slate-500 sm:table-cell">
-                          {new Date(u.createdAt).toLocaleDateString("en-GB")}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <UserActions userId={u.id} userName={u.name} currentRole={u.role} isSelf={u.id === user.id} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              users.map((u) => (
+                  <tr key={u.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3">
+                      <Link href={`/admin/users/${u.id}`} className="font-medium text-primary hover:underline">
+                        {u.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{u.email}</td>
+                  <td className="px-4 py-3">
+                    <select
+                      value={u.role}
+                      onChange={(e) => changeRole(u.id, e.target.value)}
+                      className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs capitalize"
+                    >
+                      <option value="buyer">Buyer</option>
+                      <option value="agent">Agent</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-500">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => deleteUser(u.id, u.name)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
             )}
-          </CardContent>
-        </Card>
-      </main>
-      <SiteFooter />
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
+          <span className="text-sm text-slate-600">Page {page} of {totalPages}</span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -44,6 +44,8 @@ function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;
   // property detail pages: /property/<slug>
   if (pathname.startsWith("/property/")) return true;
+  // admin login page is public
+  if (pathname === "/admin/login") return true;
   return false;
 }
 

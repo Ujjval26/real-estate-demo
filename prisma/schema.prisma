@@ -90,8 +90,7 @@ model Property {
   favouritedBy     Favourite[]
   messages         Message[]
   viewingRequests  ViewingRequest[]
-
-  @@index([listingType])
+  inquiries        Inquiry[]
   @@index([city])
   @@index([status])
   @@index([price])
@@ -211,4 +210,50 @@ model Review {
   @@unique([agentId, userId])
   @@index([agentId])
   @@map("reviews")
+}
+
+// ---------------------------------------------------------------------------
+// Locations (used for autocomplete suggestions and property location linking)
+// ---------------------------------------------------------------------------
+model Location {
+  id       String @id @default(cuid())
+  name     String
+  postcode String
+  region   String
+  type     String @default("city") // city | area
+
+  @@index([name])
+  @@index([postcode])
+  @@map("locations")
+}
+
+// ---------------------------------------------------------------------------
+// Inquiries / Leads (contact form submissions from the public site)
+// ---------------------------------------------------------------------------
+model Inquiry {
+  id         String   @id @default(cuid())
+  propertyId String?  @map("property_id")
+  name       String
+  email      String
+  phone      String?
+  subject    String?
+  message    String
+  status     String   @default("new") // new | read | resolved
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("inquiries")
+}
+
+// ---------------------------------------------------------------------------
+// Site Settings (key-value store for admin-configurable platform settings)
+// ---------------------------------------------------------------------------
+model SiteSetting {
+  key   String @id
+  value String
+
+  @@map("site_settings")
 }

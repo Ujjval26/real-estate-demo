@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     db.property.findMany({
       where: {
         status: "active",
-        city: { contains: q, mode: "insensitive" },
+        city: { contains: q },
       },
       select: { city: true },
       distinct: ["city"],
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     db.property.findMany({
       where: {
         status: "active",
-        postcode: { contains: q, mode: "insensitive" },
+        postcode: { contains: q },
       },
       select: { postcode: true, city: true },
       distinct: ["postcode"],

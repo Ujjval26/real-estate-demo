@@ -60,6 +60,12 @@ server.log
 # Local SQLite dev db (we use Turso in production)
 /db/*.db
 /db/*.db-journal
+/prisma/dev.db
+
+# Local uploads (use S3/cloud storage in production)
+/public/uploads/*.jpg
+/public/uploads/*.png
+/public/uploads/*.webp
 
 # Tool output cache
 /tool-results/

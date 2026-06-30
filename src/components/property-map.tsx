@@ -80,8 +80,7 @@ export function PropertyMap({ properties, height = "500px", center, zoom }: Prop
     if (!loaded) return;
     (async () => {
       const L = (await import("leaflet")).default;
-      // @ts-expect-error - L.Map type not imported here
-      const map = mapRef.current;
+      const map = mapRef.current as L.Map | null;
       if (!map) return;
 
       // Clear existing markers
@@ -121,7 +120,7 @@ export function PropertyMap({ properties, height = "500px", center, zoom }: Prop
       }
 
       if (bounds.length > 0) {
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        map.fitBounds(L.latLngBounds(bounds), { padding: [40, 40], maxZoom: 14 });
       }
     })();
   }, [properties, loaded]);

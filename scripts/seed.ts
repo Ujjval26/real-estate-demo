@@ -388,7 +388,7 @@ async function main() {
     },
   });
 
-  const agents = [];
+  const agents: Array<{ id: string }> = [];
   const agentData = [
     { name: "Sarah Mitchell", email: "sarah@estateably.example", phone: "07700 900123" },
     { name: "James Patel", email: "james@estateably.example", phone: "07700 900456" },
@@ -424,7 +424,7 @@ async function main() {
     },
   });
 
-  const buyers = [];
+  const buyers: Array<{ id: string }> = [];
   const buyerData = [
     { name: "Olivia Brown", email: "olivia@example.com", phone: "07700 900222" },
     { name: "Daniel Jones", email: "daniel@example.com", phone: "07700 900333" },
@@ -444,10 +444,61 @@ async function main() {
     });
     buyers.push(buyer);
   }
-  console.log(`  ✓ ${1 + agents.length + buyers.length} users (1 admin, ${agents.length} agents, ${buyers.length} buyers)`);
+  console.log("  ✓ 1 admin, 3 agents, 2 buyers, 1 QA user");
 
-  // 2. Properties (skip if already exist to keep idempotent)
-  console.log("\nCreating sample properties…");
+  // Create the specified admin account for the admin dashboard
+  const adminHash = await hashPassword("SecureAdminPass123!");
+  await db.user.upsert({
+    where: { email: "admin@trishulhub.com" },
+    update: {},
+    create: {
+      name: "TrishulHub Admin",
+      email: "admin@trishulhub.com",
+      passwordHash: adminHash,
+      role: "admin",
+      phone: "020 7946 0001",
+      emailVerified: true,
+    },
+  });
+  console.log("  ✓ admin@trishulhub.com (password: SecureAdminPass123!)");
+
+  // 3. Locations (for autocomplete and admin location management)
+  console.log("\nCreating sample locations…");
+  const locationData = [
+    { name: "London", postcode: "EC1A 1BB", region: "Greater London", type: "city" },
+    { name: "Manchester", postcode: "M1 1AA", region: "North West", type: "city" },
+    { name: "Birmingham", postcode: "B1 1AA", region: "West Midlands", type: "city" },
+    { name: "Leeds", postcode: "LS1 1AA", region: "Yorkshire", type: "city" },
+    { name: "Bristol", postcode: "BS1 1AA", region: "South West", type: "city" },
+    { name: "Liverpool", postcode: "L1 1AA", region: "North West", type: "city" },
+    { name: "Edinburgh", postcode: "EH1 1AA", region: "Scotland", type: "city" },
+    { name: "Glasgow", postcode: "G1 1AA", region: "Scotland", type: "city" },
+    { name: "Cardiff", postcode: "CF1 1AA", region: "Wales", type: "city" },
+    { name: "Sheffield", postcode: "S1 1AA", region: "Yorkshire", type: "city" },
+    { name: "Newcastle", postcode: "NE1 1AA", region: "North East", type: "city" },
+    { name: "Cambridge", postcode: "CB1 1AA", region: "East of England", type: "city" },
+    { name: "Oxford", postcode: "OX1 1AA", region: "South East", type: "city" },
+    { name: "Brighton", postcode: "BN1 1AA", region: "South East", type: "city" },
+    { name: "Nottingham", postcode: "NG1 1AA", region: "East Midlands", type: "city" },
+    { name: "Canary Wharf", postcode: "E14 9GE", region: "Greater London", type: "area" },
+    { name: "Clapham", postcode: "SW4 9JU", region: "Greater London", type: "area" },
+    { name: "Shoreditch", postcode: "EC2A 3DT", region: "Greater London", type: "area" },
+    { name: "Didsbury", postcode: "M20 6TR", region: "Greater Manchester", type: "area" },
+    { name: "Headingley", postcode: "LS6 1BB", region: "West Yorkshire", type: "area" },
+  ];
+  let locationCount = 0;
+  for (const loc of locationData) {
+    const existing = await db.location.findFirst({
+      where: { name: loc.name, postcode: loc.postcode },
+    });
+    if (!existing) {
+      await db.location.create({ data: loc });
+      locationCount++;
+    }
+  }
+  console.log(`  ✓ ${locationCount} locations created`);
+
+  // 4. Properties (skip if already exist to keep idempotent)
   let createdCount = 0;
   let existingCount = 0;
   for (const [i, p] of PROPERTIES.entries()) {
@@ -581,13 +632,14 @@ async function main() {
   }
 
   console.log("\n✅ Seed complete!\n");
-  console.log("Demo accounts (password for all: 'password123'):");
-  console.log("  Admin:  admin@estateably.example");
-  console.log("  Agent:  sarah@estateably.example");
-  console.log("  Agent:  james@estateably.example");
-  console.log("  Agent:  emma@estateably.example");
-  console.log("  Buyer:  olivia@example.com");
-  console.log("  Buyer:  daniel@example.com");
+  console.log("Demo accounts:");
+  console.log("  Admin:  admin@estateably.example (password: password123)");
+  console.log("  Admin:  admin@trishulhub.com (password: SecureAdminPass123!)");
+  console.log("  Agent:  sarah@estateably.example (password: password123)");
+  console.log("  Agent:  james@estateably.example (password: password123)");
+  console.log("  Agent:  emma@estateably.example (password: password123)");
+  console.log("  Buyer:  olivia@example.com (password: password123)");
+  console.log("  Buyer:  daniel@example.com (password: password123)");
   console.log("  QA:     up@example.com (password: 12345678)");
 }
 
