@@ -44,7 +44,11 @@ export default async function PropertyPage({
   const user = await getCurrentUser();
   const isOwner = user && (user.id === property.agentId || user.role === "admin");
 
-  const features: string[] = JSON.parse(property.features || "[]");
+  let features: string[] = [];
+  try {
+    features = JSON.parse(property.features || "[]");
+    if (!Array.isArray(features)) features = [];
+  } catch { features = []; }
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">

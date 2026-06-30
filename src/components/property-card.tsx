@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Bed, Bath, MapPin, Home, Maximize, GitCompareArrows, Loader2 } from "lucide-react";
+import { Heart, Bed, Bath, MapPin, Home, GitCompareArrows, Loader2 } from "lucide-react";
 import { useState, useTransition, useEffect } from "react";
 import { formatPropertyPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +111,8 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
   }
 
   const cover = property.images?.[0]?.imageUrl;
+  const beds = property.bedrooms;
+  const baths = property.bathrooms;
 
   return (
     <Link
@@ -180,13 +182,13 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
         </p>
         <div className="mt-3 flex items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-600">
           <span className="flex items-center gap-1">
-            <Bed className="h-3.5 w-3.5" /> {property.bedrooms} bed
+            <Bed className="h-3.5 w-3.5" /> {beds} {beds === 1 ? "bed" : "beds"}
           </span>
           <span className="flex items-center gap-1">
-            <Bath className="h-3.5 w-3.5" /> {property.bathrooms} bath
+            <Bath className="h-3.5 w-3.5" /> {baths} {baths === 1 ? "bath" : "baths"}
           </span>
           <span className="flex items-center gap-1">
-            <Maximize className="h-3.5 w-3.5" /> {property.propertyType}
+            <Home className="h-3.5 w-3.5" /> {property.propertyType}
           </span>
         </div>
       </div>

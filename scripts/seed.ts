@@ -411,13 +411,14 @@ async function main() {
   }
 
   // QA test account (matches credentials provided to QA team)
+  const qaPassword = await hashPassword("12345678");
   await db.user.upsert({
     where: { email: "up@example.com" },
     update: {},
     create: {
       name: "QA Tester",
       email: "up@example.com",
-      passwordHash,
+      passwordHash: qaPassword,
       role: "user",
       phone: "07700 900999",
       emailVerified: new Date(),

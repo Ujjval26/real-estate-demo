@@ -4,6 +4,12 @@ import { getCurrentUser } from "@/lib/auth";
 import { buildPropertySlug } from "@/lib/format";
 import type { ListingType, PropertyType, PropertyStatus } from "@/types";
 
+function safeNumberParam(val: string | null): number | undefined {
+  if (!val) return undefined;
+  const n = Number(val);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 /**
  * GET /api/properties
  * Public — list active properties with optional filters.
@@ -36,11 +42,11 @@ export async function GET(req: NextRequest) {
   const city = params.get("city")?.trim() || undefined;
   const postcode = params.get("postcode")?.trim() || undefined;
   const propertyType = params.get("propertyType") as PropertyType | null;
-  const minPrice = params.get("minPrice") ? Number(params.get("minPrice")) : undefined;
-  const maxPrice = params.get("maxPrice") ? Number(params.get("maxPrice")) : undefined;
-  const minBedrooms = params.get("minBedrooms") ? Number(params.get("minBedrooms")) : undefined;
-  const maxBedrooms = params.get("maxBedrooms") ? Number(params.get("maxBedrooms")) : undefined;
-  const minBathrooms = params.get("minBathrooms") ? Number(params.get("minBathrooms")) : undefined;
+  const minPrice = safeNumberParam(params.get("minPrice"));
+  const maxPrice = safeNumberParam(params.get("maxPrice"));
+  const minBedrooms = safeNumberParam(params.get("minBedrooms"));
+  const maxBedrooms = safeNumberParam(params.get("maxBedrooms"));
+  const minBathrooms = safeNumberParam(params.get("minBathrooms"));
   const hasGarden = params.get("hasGarden") === "1" ? true : undefined;
   const hasParking = params.get("hasParking") === "1" ? true : undefined;
   const isNewBuild = params.get("isNewBuild") === "1" ? true : undefined;
