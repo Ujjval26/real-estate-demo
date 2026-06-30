@@ -108,9 +108,26 @@ export function SearchClient() {
     return p.toString();
   }, [listingType, q, city, postcode, propertyType, minBedrooms, minPrice, maxPrice, hasGarden, hasParking, isNewBuild, sort, pagination.page]);
 
+  // Sync state from URL params on mount (handles client-side navigation edge cases)
+  useEffect(() => {
+    setQ(searchParams.get("q") || "");
+    setCity(searchParams.get("city") || "");
+    setPostcode(searchParams.get("postcode") || "");
+    setPropertyType(searchParams.get("propertyType") || "any");
+    setMinBedrooms(Number(searchParams.get("minBedrooms")) || 0);
+    setMinPrice(Number(searchParams.get("minPrice")) || 0);
+    setMaxPrice(Number(searchParams.get("maxPrice")) || 0);
+    setHasGarden(searchParams.get("hasGarden") === "1");
+    setHasParking(searchParams.get("hasParking") === "1");
+    setIsNewBuild(searchParams.get("isNewBuild") === "1");
+    setSort(searchParams.get("sort") || "newest");
+    setListingType((searchParams.get("listingType") as "sale" | "rent") || "sale");
+  }, [searchParams]);
+
   // Fetch results whenever filters change (debounced)
   useEffect(() => {
     const t = setTimeout(async () => {
+      setLoading(true);
       try {
         const res = await fetch(`/api/properties?${queryString}`);
         const data = await res.json();
@@ -125,7 +142,7 @@ export function SearchClient() {
       } finally {
         setLoading(false);
       }
-    }, 100);
+    }, 200);
     return () => clearTimeout(t);
   }, [queryString]);
 
