@@ -111,7 +111,6 @@ export function SearchClient() {
   // Fetch results whenever filters change (debounced)
   useEffect(() => {
     const t = setTimeout(async () => {
-      setLoading(true);
       try {
         const res = await fetch(`/api/properties?${queryString}`);
         const data = await res.json();
@@ -126,7 +125,7 @@ export function SearchClient() {
       } finally {
         setLoading(false);
       }
-    }, 250);
+    }, 100);
     return () => clearTimeout(t);
   }, [queryString]);
 

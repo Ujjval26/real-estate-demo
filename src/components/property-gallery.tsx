@@ -82,7 +82,7 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
               }`}
             >
               { }
-              <img src={img.url} alt="" className="h-full w-full object-cover" />
+              <img src={img.url} alt="" className="h-full w-full object-cover" loading="lazy" />
             </button>
           ))}
         </div>

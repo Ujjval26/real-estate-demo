@@ -31,8 +31,13 @@ export async function POST(req: NextRequest) {
     await db.favourite.create({
       data: { userId: user.id, propertyId },
     });
-  } catch {
-    // Unique constraint = already favourited; treat as success.
+  } catch (err: any) {
+    if (err?.code === "P2002" || err?.message?.toLowerCase().includes("unique")) {
+      // Unique constraint = already favourited; treat as success.
+    } else {
+      console.error("[favourites] create error", err);
+      return NextResponse.json({ error: "Could not save favourite." }, { status: 500 });
+    }
   }
   return NextResponse.json({ ok: true });
 }

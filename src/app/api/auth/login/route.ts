@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
 import {
   verifyPassword,
   signSessionToken,
@@ -23,6 +24,14 @@ export async function POST(req: NextRequest) {
       );
     }
     const { email, password } = parsed.data;
+
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!checkRateLimit(`login:${ip}`, 5, 60000)) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Try again in 1 minute." },
+        { status: 429 },
+      );
+    }
 
     const user = await db.user.findUnique({ where: { email } });
     if (!user) {

@@ -12,7 +12,7 @@ const SignupSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(["buyer", "agent"]).default("buyer"),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^(\+44|0)[1-9]\d{8,9}$/, "Enter a valid UK phone number").optional().or(z.literal("")),
 });
 
 export async function POST(req: NextRequest) {

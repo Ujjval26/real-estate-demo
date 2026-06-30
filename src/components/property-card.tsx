@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Bed, Bath, MapPin, Home, Maximize, GitCompareArrows } from "lucide-react";
+import Image from "next/image";
+import { Heart, Bed, Bath, MapPin, Home, Maximize, GitCompareArrows, Loader2 } from "lucide-react";
 import { useState, useTransition, useEffect } from "react";
 import { formatPropertyPrice } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -118,10 +119,12 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         {cover ? (
-          <img
+          <Image
             src={cover}
             alt={property.title}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform group-hover:scale-105"
             loading="lazy"
           />
         ) : (
@@ -155,7 +158,7 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
             aria-label={fav ? "Remove from saved" : "Save property"}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow-sm hover:bg-white hover:text-rose-600 disabled:opacity-50"
           >
-            <Heart className={cn("h-4 w-4", fav && "fill-rose-500 text-rose-500")} />
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className={cn("h-4 w-4", fav && "fill-rose-500 text-rose-500")} />}
           </button>
         </div>
       </div>

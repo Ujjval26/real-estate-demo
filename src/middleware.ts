@@ -27,13 +27,13 @@ const PUBLIC_PATHS = [
   "/terms",
   "/privacy",
   "/compare",
-  "/forgot-password",
 ];
 
 const PUBLIC_API_PREFIXES = [
   "/api/auth",
   "/api/properties", // GET is public; POST is gated in the handler
   "/api/reviews", // GET is public
+  "/api", // root health check is public
 ];
 
 function isPublic(pathname: string): boolean {

@@ -10,7 +10,7 @@ export default async function SearchPage() {
     <div className="flex min-h-screen flex-col bg-slate-50">
       <SiteHeader user={user ? { name: user.name, role: user.role } : null} />
       <main className="flex-1">
-        <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">Loading search…</div>}>
+        <Suspense fallback={<div className="flex items-center justify-center p-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>}>
           <SearchClient />
         </Suspense>
       </main>

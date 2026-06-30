@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 const ProfilePatchSchema = z.object({
   name: z.string().min(2).optional(),
-  phone: z.string().optional().nullable(),
+  phone: z.string().regex(/^(\+44|0)[1-9]\d{8,9}$/, "Enter a valid UK phone number").optional().nullable().or(z.literal("")),
 });
 
 export async function PATCH(req: NextRequest) {

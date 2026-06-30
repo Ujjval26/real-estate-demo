@@ -92,7 +92,21 @@ export async function PATCH(
     for (const key of allowed) {
       if (key in body) update[key] = body[key];
     }
-    if (typeof update.price === "number") update.price = Math.round(update.price);
+    if (typeof update.price === "number") {
+      if (update.price < 0) {
+        return NextResponse.json({ error: "Price must be positive." }, { status: 400 });
+      }
+      update.price = Math.round(update.price);
+    }
+    if (typeof update.bedrooms === "number" && (update.bedrooms < 0 || !Number.isInteger(update.bedrooms))) {
+      return NextResponse.json({ error: "Bedrooms must be a positive integer." }, { status: 400 });
+    }
+    if (typeof update.bathrooms === "number" && (update.bathrooms < 0 || !Number.isInteger(update.bathrooms))) {
+      return NextResponse.json({ error: "Bathrooms must be a positive integer." }, { status: 400 });
+    }
+    if (typeof update.receptionRooms === "number" && (update.receptionRooms < 0 || !Number.isInteger(update.receptionRooms))) {
+      return NextResponse.json({ error: "Reception rooms must be a positive integer." }, { status: 400 });
+    }
     if (Array.isArray(body.features)) {
       update.features = JSON.stringify(body.features);
     }

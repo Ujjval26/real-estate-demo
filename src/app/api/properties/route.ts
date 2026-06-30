@@ -176,6 +176,18 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
+    const numBeds = Number(bedrooms);
+    const numBaths = Number(bathrooms);
+    const numReception = Number(receptionRooms);
+    if (numBeds < 0 || !Number.isInteger(numBeds)) {
+      return NextResponse.json({ error: "Bedrooms must be a positive integer." }, { status: 400 });
+    }
+    if (numBaths < 0 || !Number.isInteger(numBaths)) {
+      return NextResponse.json({ error: "Bathrooms must be a positive integer." }, { status: 400 });
+    }
+    if (numReception < 0 || !Number.isInteger(numReception)) {
+      return NextResponse.json({ error: "Reception rooms must be a positive integer." }, { status: 400 });
+    }
 
     // Generate a unique slug
     const shortId = Math.random().toString(36).slice(2, 8);

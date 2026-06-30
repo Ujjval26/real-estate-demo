@@ -17,13 +17,27 @@ export function ContactForm({ defaultName, defaultEmail }: { defaultName: string
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) return;
     setLoading(true);
-    // Simulate sending (this is a demo — no backend endpoint)
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    toast.success("Thanks — we'll be in touch soon!");
-    setSubject("");
-    setMessage("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error || "Failed to send message.");
+        return;
+      }
+      toast.success("Thanks — we'll be in touch soon!");
+      setSubject("");
+      setMessage("");
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
