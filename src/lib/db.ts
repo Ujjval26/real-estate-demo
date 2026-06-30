@@ -1,12 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaLibSql } from "@prisma/adapter-libsql/web";
 
 /**
  * Turso (libSQL) backed Prisma client.
  *
- * We instantiate a single shared client on the server and cache it on
- * `globalThis` so that Next.js's hot-reload in development does not
- * exhaust database connections.
+ * Uses the WASM variant (@prisma/adapter-libsql/web) so native binaries
+ * are not required — works on any platform (local dev, Vercel serverless).
  *
  * Required env vars:
  *   - TURSO_DATABASE_URL   e.g. libsql://my-db.turso.io
@@ -27,8 +26,6 @@ function createPrismaClient(): PrismaClient {
     );
   }
 
-  // The PrismaLibSql adapter accepts a config object that mirrors the
-  // @libsql/client `createClient` options.
   const adapter = new PrismaLibSql({ url, authToken });
   return new PrismaClient({ adapter });
 }
