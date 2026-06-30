@@ -74,3 +74,4 @@ server.log
 # Tool output cache
 /tool-results/
 download/*.png
+.env*
