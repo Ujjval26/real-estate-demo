@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 
@@ -20,55 +19,36 @@ export function HomeHeroSearch() {
   }
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-xl">
+    <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="flex shrink-0 overflow-hidden rounded-md border border-slate-200">
         <button
+          type="button"
           onClick={() => setListingType("sale")}
           className={cn(
-            "px-6 py-2 text-sm font-medium transition-colors",
+            "px-4 py-2.5 text-sm font-semibold transition-colors",
             listingType === "sale" ? "bg-primary text-primary-foreground" : "bg-white text-slate-700 hover:bg-slate-50",
           )}
         >
           Buy
         </button>
         <button
+          type="button"
           onClick={() => setListingType("rent")}
           className={cn(
-            "px-6 py-2 text-sm font-medium transition-colors",
+            "px-4 py-2.5 text-sm font-semibold transition-colors",
             listingType === "rent" ? "bg-primary text-primary-foreground" : "bg-white text-slate-700 hover:bg-slate-50",
           )}
         >
           Rent
         </button>
       </div>
-      <form onSubmit={onSubmit} className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <div className="relative flex-1">
-          <SearchAutocomplete
-            placeholder="Enter a city, postcode, or area…"
-            value={q}
-            onChange={setQ}
-            className="h-12 text-base"
-          />
-        </div>
-        <Button type="submit" size="lg" className="h-12">
-          Search
-        </Button>
-      </form>
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-        <span>Popular:</span>
-        {["London", "Manchester", "Bristol", "Leeds"].map((c) => (
-          <button
-            key={c}
-            onClick={() => {
-              setQ(c);
-              router.push(`/search?listingType=${listingType}&q=${c}`);
-            }}
-            className="rounded-full border border-slate-200 px-2 py-0.5 hover:border-primary hover:text-primary"
-          >
-            {c}
-          </button>
-        ))}
+      <div className="relative min-w-0 flex-1">
+        <SearchAutocomplete
+          placeholder="Search by city, postcode, or keyword…"
+          value={q}
+          onChange={setQ}
+        />
       </div>
-    </div>
+    </form>
   );
 }
