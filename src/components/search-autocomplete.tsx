@@ -15,10 +15,11 @@ interface SearchAutocompleteProps {
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;
+  onSubmit?: (value: string) => void;
   className?: string;
 }
 
-export function SearchAutocomplete({ placeholder, value, onChange, className }: SearchAutocompleteProps) {
+export function SearchAutocomplete({ placeholder, value, onChange, onSubmit, className }: SearchAutocompleteProps) {
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [highlighted, setHighlighted] = useState(-1);
@@ -73,6 +74,7 @@ export function SearchAutocomplete({ placeholder, value, onChange, className }: 
     } else if (e.key === "Enter" && highlighted >= 0) {
       e.preventDefault();
       select(suggestions[highlighted]);
+      onSubmit?.(suggestions[highlighted].value);
     } else if (e.key === "Escape") {
       setOpen(false);
       setHighlighted(-1);

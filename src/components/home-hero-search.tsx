@@ -11,12 +11,16 @@ export function HomeHeroSearch() {
   const [listingType, setListingType] = useState<"sale" | "rent">("sale");
   const [q, setQ] = useState("");
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function navigate(value: string) {
     const params = new URLSearchParams();
     params.set("listingType", listingType);
-    if (q.trim()) params.set("q", q.trim());
+    if (value.trim()) params.set("q", value.trim());
     router.push(`/search?${params.toString()}`);
+  }
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    navigate(q);
   }
 
   return (
@@ -47,6 +51,7 @@ export function HomeHeroSearch() {
             placeholder="Enter a city, postcode, or area…"
             value={q}
             onChange={setQ}
+            onSubmit={navigate}
             className="h-12 text-base"
           />
         </div>
