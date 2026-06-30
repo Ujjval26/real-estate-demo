@@ -165,7 +165,7 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
       <div className={cn("p-4", compact && "p-3")}>
         <div className="flex items-baseline justify-between gap-2">
           <p className="text-lg font-bold text-slate-900">
-            {formatPropertyPrice(property.price, property.listingType as "sale" | "rent")}
+            {property.price > 0 ? formatPropertyPrice(property.price, property.listingType as "sale" | "rent") : "Price on application"}
           </p>
           <Badge variant="outline" className="capitalize">
             {property.propertyType}
@@ -176,14 +176,14 @@ export function PropertyCard({ property, favourited: initialFav, compact }: Prop
         </p>
         <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
           <MapPin className="h-3 w-3" />
-          {property.city}, {property.postcode}
+          {property.city}{property.postcode && property.postcode !== "-1" ? `, ${property.postcode}` : ""}
         </p>
         <div className="mt-3 flex items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-600">
           <span className="flex items-center gap-1">
-            <Bed className="h-3.5 w-3.5" /> {property.bedrooms}
+            <Bed className="h-3.5 w-3.5" /> {property.bedrooms} bed
           </span>
           <span className="flex items-center gap-1">
-            <Bath className="h-3.5 w-3.5" /> {property.bathrooms}
+            <Bath className="h-3.5 w-3.5" /> {property.bathrooms} bath
           </span>
           <span className="flex items-center gap-1">
             <Maximize className="h-3.5 w-3.5" /> {property.propertyType}

@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SearchAutocomplete } from "@/components/search-autocomplete";
 
 export function HomeHeroSearch() {
   const router = useRouter();
@@ -44,12 +43,11 @@ export function HomeHeroSearch() {
       </div>
       <form onSubmit={onSubmit} className="mt-3 flex flex-col gap-2 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
+          <SearchAutocomplete
             placeholder="Enter a city, postcode, or area…"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className="pl-9 h-12 text-base"
+            onChange={setQ}
+            className="h-12 text-base"
           />
         </div>
         <Button type="submit" size="lg" className="h-12">

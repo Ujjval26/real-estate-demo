@@ -12,9 +12,12 @@ export default async function ContactPage() {
       <SiteHeader user={user ? { name: user.name, role: user.role } : null} />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-12">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Contact us</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Questions, feedback, or partnership enquiries — we&apos;d love to hear from you.
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-slate-600">
+            Questions, feedback, or partnership enquiries — we&apos;d love to hear from you.
+          </p>
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">Demo</span>
+        </div>
 
         <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
           {/* Contact info */}

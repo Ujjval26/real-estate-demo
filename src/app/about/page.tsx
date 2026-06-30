@@ -55,8 +55,17 @@ export default async function AboutPage() {
             This site is a demonstration project. Property listings are sample
             data, agent details are fictional, and no real transactions take
             place. Please don&apos;t enter real financial information into the
-            calculators. If you&apos;d like to learn how the platform was built,
-            check out the open-source code on GitHub.
+            calculators.             If you&apos;d like to learn how the platform was built,
+            check out the open-source code on{" "}
+            <a
+              href="https://github.com/Ujjval26/real-estate-demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              GitHub
+            </a>
+            .
           </p>
         </div>
       </main>

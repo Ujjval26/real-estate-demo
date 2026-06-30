@@ -73,12 +73,12 @@ export default async function PropertyPage({
             </h1>
             <p className="mt-1 flex items-center gap-1 text-sm text-slate-600">
               <MapPin className="h-4 w-4" />
-              {property.address}, {property.city}, {property.postcode}
+              {property.address}, {property.city}{property.postcode && property.postcode !== "-1" ? `, ${property.postcode}` : ""}
             </p>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-primary">
-              {formatPropertyPrice(property.price, property.listingType as "sale" | "rent")}
+              {property.price > 0 ? formatPropertyPrice(property.price, property.listingType as "sale" | "rent") : "Price on application"}
             </p>
             {property.status === "sold" && (
               <Badge variant="secondary" className="mt-1">Sold STC</Badge>

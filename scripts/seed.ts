@@ -410,6 +410,20 @@ async function main() {
     agents.push(agent);
   }
 
+  // QA test account (matches credentials provided to QA team)
+  await db.user.upsert({
+    where: { email: "up@example.com" },
+    update: {},
+    create: {
+      name: "QA Tester",
+      email: "up@example.com",
+      passwordHash,
+      role: "buyer",
+      phone: "07700 900999",
+      emailVerified: true,
+    },
+  });
+
   const buyers = [];
   const buyerData = [
     { name: "Olivia Brown", email: "olivia@example.com", phone: "07700 900222" },
@@ -574,6 +588,7 @@ async function main() {
   console.log("  Agent:  emma@estateably.example");
   console.log("  Buyer:  olivia@example.com");
   console.log("  Buyer:  daniel@example.com");
+  console.log("  QA:     up@example.com (password: 12345678)");
 }
 
 main()

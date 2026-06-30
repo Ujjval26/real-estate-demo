@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, MapPin, X, List, Map as MapIcon, SlidersHorizontal } from "lucide-react";
+import { MapPin, X, List, Map as MapIcon, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { PropertyCard } from "@/components/property-card";
 import { PropertyMap } from "@/components/property-map";
 import { SaveSearchButton } from "@/components/save-search-button";
+import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { formatGBP } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -170,10 +171,10 @@ export function SearchClient() {
       {/* Location */}
       <div className="space-y-2">
         <Label className="text-xs">Location</Label>
-        <Input
+        <SearchAutocomplete
           placeholder="City, postcode, or area"
           value={city}
-          onChange={(e) => resetPageAnd(setCity, e.target.value)}
+          onChange={(v) => resetPageAnd(setCity, v)}
         />
         <div className="flex flex-wrap gap-1">
           {POPULAR_CITIES.slice(0, 6).map((c) => (
@@ -304,12 +305,10 @@ export function SearchClient() {
           </button>
         </div>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
+          <SearchAutocomplete
             placeholder="Search by city, postcode, or keyword…"
             value={q}
-            onChange={(e) => resetPageAnd(setQ, e.target.value)}
-            className="pl-9"
+            onChange={(v) => resetPageAnd(setQ, v)}
           />
         </div>
         <Sheet>
