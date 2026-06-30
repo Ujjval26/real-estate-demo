@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search as SearchIcon, Plus } from "lucide-react";
+import { Loader2, Search as SearchIcon, Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -88,9 +88,14 @@ export default function AdminUsersPage() {
           <h1 className="text-2xl font-bold text-slate-900">Users</h1>
           <p className="text-sm text-slate-500">Manage registered users.</p>
         </div>
-        <Button asChild>
-          <Link href="/admin/users/new"><Plus className="mr-1 h-4 w-4" /> Add User</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <a href="/api/admin/users/export"><Download className="mr-1 h-4 w-4" /> Export CSV</a>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/users/new"><Plus className="mr-1 h-4 w-4" /> Add User</Link>
+          </Button>
+        </div>
       </div>
 
       <form onSubmit={handleSearch} className="relative max-w-sm">

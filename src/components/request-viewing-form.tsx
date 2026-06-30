@@ -36,7 +36,7 @@ export function RequestViewingForm({ propertyId, loggedIn }: RequestViewingFormP
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           propertyId,
-          requestedDate: new Date(date).toISOString(),
+          preferredDate: new Date(date).toISOString(),
           notes: notes || undefined,
         }),
       });

@@ -31,7 +31,10 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # vercel
 .vercel
@@ -61,6 +64,7 @@ server.log
 /db/*.db
 /db/*.db-journal
 /prisma/dev.db
+**/dev.db
 
 # Local uploads (use S3/cloud storage in production)
 /public/uploads/*.jpg

@@ -55,12 +55,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Agent not found." }, { status: 404 });
     }
 
+    const agentProperty = await db.property.findFirst({
+      where: { agentId },
+      select: { id: true },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!agentProperty) {
+      return NextResponse.json({ error: "Agent has no properties to review." }, { status: 400 });
+    }
+
     const review = await db.review.create({
       data: {
+        propertyId: agentProperty.id,
         agentId,
         userId: user.id,
         rating: Math.round(rating),
         comment: comment || null,
+        approved: false,
       },
     });
     return NextResponse.json({ review }, { status: 201 });

@@ -1,21 +1,3 @@
-// ===========================================================================
-// Estateably — Real Estate Platform Prisma Schema
-// Database: Turso (libSQL / SQLite-compatible)
-// ===========================================================================
-// This schema defines every table required for the property platform:
-//   - users, properties, property_images
-//   - favourites, saved_searches
-//   - messages, viewing_requests, reviews
-// All money fields are stored as INTEGER (whole GBP) to avoid float issues.
-// JSON-shaped columns (features, search_criteria) are stored as TEXT and
-// parsed/serialised in the application layer.
-//
-// Naming: Prisma models use PascalCase (e.g. `Property`); the underlying SQL
-// tables use snake_case plural (e.g. `properties`). The mapping is done with
-// `@@map` (tables) and `@map` (columns) so the raw SQL schema (schema.sql)
-// and the Prisma client stay perfectly in sync.
-// ===========================================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -33,22 +15,25 @@ model User {
   name          String
   email         String   @unique
   passwordHash  String   @map("password_hash")
-  role          String   @default("buyer") // buyer | agent | admin
+  role          String   @default("user") // admin | agent | user
+  status        String   @default("active") // active | banned | pending
   phone         String?
-  emailVerified Boolean  @default(false) @map("email_verified")
+  avatar        String?
+  emailVerified DateTime? @map("email_verified")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  // Relations
   properties       Property[]
   favourites       Favourite[]
   savedSearches    SavedSearch[]
   messagesSent     Message[]      @relation("MessagesSent")
   messagesReceived Message[]      @relation("MessagesReceived")
-  viewingRequests  ViewingRequest[]
   reviewsGiven     Review[]       @relation("ReviewsGiven")
   reviewsReceived  Review[]       @relation("ReviewsReceived")
+  statusChanges    StatusChange[]
 
+  @@index([role])
+  @@index([status])
   @@map("users")
 }
 
@@ -56,45 +41,63 @@ model User {
 // Properties
 // ---------------------------------------------------------------------------
 model Property {
-  id           String   @id @default(cuid())
-  agentId      String   @map("agent_id")
-  title        String
-  slug         String   @unique
-  description  String
-  price        Int // whole GBP (£)
-  listingType  String   @default("sale") @map("listing_type") // sale | rent
-  propertyType String   @default("house") @map("property_type") // house | flat | bungalow | maisonette | cottage | land | other
-  bedrooms     Int      @default(1)
-  bathrooms    Int      @default(1)
-  receptionRooms Int    @default(1) @map("reception_rooms")
-  address      String
-  postcode     String
-  city         String
-  latitude     Float?
-  longitude    Float?
-  epcRating    String?  @map("epc_rating") // A–G
-  features     String   @default("[]") // JSON array stored as TEXT
-  floorPlanUrl String?  @map("floor_plan_url")
-  status       String   @default("draft") // draft | active | sold | let | withdrawn
-  isNewBuild   Boolean  @default(false) @map("is_new_build")
-  hasGarden    Boolean  @default(false) @map("has_garden")
-  hasParking   Boolean  @default(false) @map("has_parking")
-  viewCount    Int      @default(0) @map("view_count")
-  enquiryCount Int      @default(0) @map("enquiry_count")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(cuid())
+  agentId        String   @map("agent_id")
+  title          String
+  slug           String   @unique
+  description    String
+  price          Int
+  listingType    String   @default("sale") @map("listing_type") // sale | rent
+  propertyType   String   @default("house") @map("property_type")
+  pricePeriod    String?  @map("price_period") // pcm | pw
+  bedrooms       Int      @default(1)
+  bathrooms      Int      @default(1)
+  receptionRooms Int      @default(1) @map("reception_rooms")
+  size           Int?     // sq ft
+  epcRating      String?  @map("epc_rating")
+  councilTaxBand String?  @map("council_tax_band")
+  tenure         String?
+  address        String
+  city           String
+  postcode       String
+  region         String?
+  latitude       Float?
+  longitude      Float?
+  features       String   @default("[]")
+  customFeatures String?  @map("custom_features")
+  isNewBuild     Boolean  @default(false) @map("is_new_build")
+  hasGarden      Boolean  @default(false) @map("has_garden")
+  hasParking     Boolean  @default(false) @map("has_parking")
+  floorPlanUrl   String?  @map("floor_plan_url")
+  status         String   @default("draft")
+  // draft | pending | approved | under_offer | sold | let_agreed | archived | withdrawn
+  featured       Boolean  @default(false)
+  viewCount      Int      @default(0) @map("view_count")
+  enquiryCount   Int      @default(0) @map("enquiry_count")
+  primaryImage   String?  @map("primary_image")
+  publishDate    DateTime? @map("publish_date")
+  expiryDate     DateTime? @map("expiry_date")
+  soldDate       DateTime? @map("sold_date")
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  agent            User              @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  images           PropertyImage[]
-  favouritedBy     Favourite[]
-  messages         Message[]
-  viewingRequests  ViewingRequest[]
-  inquiries        Inquiry[]
+  agent           User            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  images          PropertyImage[]
+  favouritedBy    Favourite[]
+  messages        Message[]
+  viewingRequests ViewingRequest[]
+  inquiries       Inquiry[]
+  statusChanges   StatusChange[]
+  reviews         Review[]
+
+  @@index([listingType])
   @@index([city])
   @@index([status])
   @@index([price])
   @@index([agentId])
+  @@index([deletedAt])
+  @@index([postcode])
   @@map("properties")
 }
 
@@ -132,13 +135,13 @@ model Favourite {
 }
 
 // ---------------------------------------------------------------------------
-// Saved Searches (with optional email alerts)
+// Saved Searches
 // ---------------------------------------------------------------------------
 model SavedSearch {
   id                 String   @id @default(cuid())
   userId             String   @map("user_id")
   name               String?
-  searchCriteria     String   @default("{}") @map("search_criteria") // JSON
+  searchCriteria     String   @default("{}") @map("search_criteria")
   emailAlertsEnabled Boolean  @default(false) @map("email_alerts_enabled")
   lastAlertedAt      DateTime? @map("last_alerted_at")
   createdAt          DateTime @default(now()) @map("created_at")
@@ -150,7 +153,7 @@ model SavedSearch {
 }
 
 // ---------------------------------------------------------------------------
-// Messages (between users and agents)
+// Messages
 // ---------------------------------------------------------------------------
 model Message {
   id          String   @id @default(cuid())
@@ -176,51 +179,90 @@ model Message {
 // Viewing Requests
 // ---------------------------------------------------------------------------
 model ViewingRequest {
-  id            String   @id @default(cuid())
-  userId        String   @map("user_id")
-  propertyId    String   @map("property_id")
-  requestedDate DateTime @map("requested_date")
+  id            String    @id @default(cuid())
+  propertyId    String    @map("property_id")
+  name          String
+  email         String
+  phone         String?
+  preferredDate DateTime   @map("preferred_date")
+  preferredTime String?    @map("preferred_time")
   notes         String?
-  status        String   @default("pending") // pending | confirmed | declined | completed | cancelled
-  createdAt     DateTime @default(now()) @map("created_at")
+  status        String    @default("pending")
+  // pending | confirmed | completed | cancelled | no_show
+  confirmedBy   String?   @map("confirmed_by")
+  confirmedAt   DateTime? @map("confirmed_at")
+  completedAt   DateTime? @map("completed_at")
+  feedback      String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
   @@index([propertyId])
   @@index([status])
+  @@index([email])
   @@map("viewing_requests")
 }
 
 // ---------------------------------------------------------------------------
-// Reviews / Ratings (for agents)
+// Reviews
 // ---------------------------------------------------------------------------
 model Review {
-  id        String   @id @default(cuid())
-  agentId   String   @map("agent_id")
-  userId    String   @map("user_id")
-  rating    Int // 1–5
-  comment   String?
-  createdAt DateTime @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  agentId    String   @map("agent_id")
+  userId     String   @map("user_id")
+  rating     Int
+  comment    String?
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
-  agent User @relation("ReviewsReceived", fields: [agentId], references: [id], onDelete: Cascade)
-  user  User @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  agent    User     @relation("ReviewsReceived", fields: [agentId], references: [id], onDelete: Cascade)
+  user     User     @relation("ReviewsGiven", fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([agentId, userId])
+  @@index([propertyId])
   @@index([agentId])
+  @@index([approved])
   @@map("reviews")
 }
 
 // ---------------------------------------------------------------------------
-// Locations (used for autocomplete suggestions and property location linking)
+// Status Change Audit Trail
+// ---------------------------------------------------------------------------
+model StatusChange {
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  oldStatus  String   @map("old_status")
+  newStatus  String   @map("new_status")
+  changedBy  String   @map("changed_by")
+  reason     String?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  changedByUser User     @relation(fields: [changedBy], references: [id])
+
+  @@index([propertyId])
+  @@index([createdAt])
+  @@map("status_changes")
+}
+
+// ---------------------------------------------------------------------------
+// Locations
 // ---------------------------------------------------------------------------
 model Location {
-  id       String @id @default(cuid())
-  name     String
-  postcode String
-  region   String
-  type     String @default("city") // city | area
+  id            String   @id @default(cuid())
+  name          String
+  postcode      String
+  region        String
+  type          String   @default("city")
+  propertyCount Int      @default(0) @map("property_count")
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@index([name])
   @@index([postcode])
@@ -228,7 +270,7 @@ model Location {
 }
 
 // ---------------------------------------------------------------------------
-// Inquiries / Leads (contact form submissions from the public site)
+// Inquiries / Leads
 // ---------------------------------------------------------------------------
 model Inquiry {
   id         String   @id @default(cuid())
@@ -238,18 +280,23 @@ model Inquiry {
   phone      String?
   subject    String?
   message    String
-  status     String   @default("new") // new | read | resolved
+  status     String   @default("new") // new | read | replied | resolved
+  source     String   @default("website") // website | phone | email
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
   createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   property Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
 
+  @@index([propertyId])
   @@index([status])
   @@index([createdAt])
   @@map("inquiries")
 }
 
 // ---------------------------------------------------------------------------
-// Site Settings (key-value store for admin-configurable platform settings)
+// Site Settings
 // ---------------------------------------------------------------------------
 model SiteSetting {
   key   String @id

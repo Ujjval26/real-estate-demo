@@ -32,7 +32,7 @@ export default async function DashboardPage() {
       take: 5,
     }),
     db.viewingRequest.findMany({
-      where: { userId: user.id },
+      where: { email: user.email },
       orderBy: { createdAt: "desc" },
       take: 5,
       include: {
@@ -224,7 +224,7 @@ export default async function DashboardPage() {
                           {v.property.title}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {new Date(v.requestedDate).toLocaleDateString("en-GB", {
+                          {new Date(v.preferredDate).toLocaleDateString("en-GB", {
                             day: "numeric", month: "short", year: "numeric",
                           })}
                         </p>

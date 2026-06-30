@@ -16,6 +16,8 @@ import {
   ChevronDown,
   Home,
   UserCircle,
+  Star,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,8 @@ const NAV_ITEMS = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/locations", label: "Locations", icon: MapPin },
   { href: "/admin/inquiries", label: "Inquiries", icon: MessageSquare },
+  { href: "/admin/viewings", label: "Viewings", icon: Calendar },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/profile", label: "Profile", icon: UserCircle },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

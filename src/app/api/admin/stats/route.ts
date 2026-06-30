@@ -13,7 +13,7 @@ export async function GET() {
 
   const [
     totalUsers, totalAgents, totalBuyers, totalProperties,
-    activeProperties, soldProperties, letProperties, draftProperties,
+    activeProperties, soldProperties, letProperties, draftProperties, pendingProperties,
     totalFavourites, totalMessages, totalViewingRequests, totalReviews,
     pendingViewingRequests,
   ] = await Promise.all([
@@ -25,12 +25,21 @@ export async function GET() {
     db.property.count({ where: { status: "sold" } }),
     db.property.count({ where: { status: "let" } }),
     db.property.count({ where: { status: "draft" } }),
+    db.property.count({ where: { status: "pending" } }),
     db.favourite.count(),
     db.message.count(),
     db.viewingRequest.count(),
     db.review.count(),
     db.viewingRequest.count({ where: { status: "pending" } }),
   ]);
+
+  // Top 10 cities by property count
+  const topCities = await db.property.groupBy({
+    by: ["city"],
+    _count: { city: true },
+    orderBy: { _count: { city: "desc" } },
+    take: 10,
+  });
 
   // Aggregate view + enquiry counts
   const viewsAgg = await db.property.aggregate({
@@ -58,7 +67,7 @@ export async function GET() {
   return NextResponse.json({
     counts: {
       totalUsers, totalAgents, totalBuyers,
-      totalProperties, activeProperties, soldProperties, letProperties, draftProperties,
+      totalProperties, activeProperties, soldProperties, letProperties, draftProperties, pendingProperties,
       totalFavourites, totalMessages, totalViewingRequests, totalReviews,
       pendingViewingRequests,
     },
@@ -68,5 +77,6 @@ export async function GET() {
     },
     topProperties,
     newUsers,
+    topCities: topCities.map((c) => ({ city: c.city, count: c._count.city })),
   });
 }

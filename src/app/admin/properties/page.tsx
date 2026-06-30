@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search as SearchIcon, Loader2, Trash2 } from "lucide-react";
+import { Plus, Search as SearchIcon, Loader2, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -90,6 +90,11 @@ export default function AdminPropertiesPage() {
           <Link href="/admin/properties/new">
             <Plus className="mr-1 h-4 w-4" /> Add Property
           </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <a href="/api/admin/properties/export">
+            <Download className="mr-1 h-4 w-4" /> Export CSV
+          </a>
         </Button>
       </div>
 

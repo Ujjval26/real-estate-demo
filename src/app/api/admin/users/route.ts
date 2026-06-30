@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       passwordHash: await hashPassword(body.password),
       role: body.role || "buyer",
       phone: body.phone || null,
-      emailVerified: true,
+      emailVerified: new Date(),
     },
     select: { id: true, name: true, email: true, role: true, phone: true, createdAt: true },
   });

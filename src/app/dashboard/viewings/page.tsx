@@ -14,7 +14,7 @@ export default async function ViewingsPage() {
   if (!user) redirect("/login?next=/dashboard/viewings");
 
   const requests = await db.viewingRequest.findMany({
-    where: { userId: user.id },
+    where: { email: user.email },
     orderBy: { createdAt: "desc" },
     include: {
       property: {
@@ -75,7 +75,7 @@ export default async function ViewingsPage() {
                       <p className="mt-1 text-xs text-slate-500">
                         Requested for:{" "}
                         <span className="font-medium text-slate-700">
-                          {new Date(r.requestedDate).toLocaleDateString("en-GB", {
+                          {new Date(r.preferredDate).toLocaleDateString("en-GB", {
                             day: "numeric", month: "long", year: "numeric",
                           })}
                         </span>

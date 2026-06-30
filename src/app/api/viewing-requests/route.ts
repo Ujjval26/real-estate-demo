@@ -2,29 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
-/**
- * GET /api/viewing-requests
- * Returns viewing requests for the current user (as buyer).
- * Agents get viewing requests for their properties.
- *
- * POST /api/viewing-requests
- * Body: { propertyId, requestedDate (ISO), notes? }
- */
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
 
-  // If agent: return viewing requests for their properties.
-  // If buyer: return viewing requests they've sent.
   if (user.role === "agent" || user.role === "admin") {
     const requests = await db.viewingRequest.findMany({
       where: { property: { agentId: user.id } },
       orderBy: { createdAt: "desc" },
       include: {
         property: { select: { id: true, title: true, slug: true, city: true } },
-        user: { select: { id: true, name: true, email: true, phone: true } },
       },
       take: 200,
     });
@@ -32,7 +21,7 @@ export async function GET() {
   }
 
   const requests = await db.viewingRequest.findMany({
-    where: { userId: user.id },
+    where: { email: user.email },
     orderBy: { createdAt: "desc" },
     include: {
       property: {
@@ -54,10 +43,10 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    const { propertyId, requestedDate, notes } = body;
-    if (!propertyId || !requestedDate) {
+    const { propertyId, preferredDate, preferredTime, notes } = body;
+    if (!propertyId || !preferredDate) {
       return NextResponse.json(
-        { error: "propertyId and requestedDate required." },
+        { error: "propertyId and preferredDate required." },
         { status: 400 },
       );
     }
@@ -68,9 +57,12 @@ export async function POST(req: NextRequest) {
 
     const request = await db.viewingRequest.create({
       data: {
-        userId: user.id,
         propertyId,
-        requestedDate: new Date(requestedDate),
+        name: user.name,
+        email: user.email,
+        phone: user.phone || null,
+        preferredDate: new Date(preferredDate),
+        preferredTime: preferredTime || null,
         notes: notes || null,
         status: "pending",
       },

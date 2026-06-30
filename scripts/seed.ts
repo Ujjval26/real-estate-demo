@@ -384,7 +384,7 @@ async function main() {
       passwordHash,
       role: "admin",
       phone: "020 7946 0000",
-      emailVerified: true,
+      emailVerified: new Date(),
     },
   });
 
@@ -404,7 +404,7 @@ async function main() {
         passwordHash,
         role: "agent",
         phone: a.phone,
-        emailVerified: true,
+        emailVerified: new Date(),
       },
     });
     agents.push(agent);
@@ -418,9 +418,9 @@ async function main() {
       name: "QA Tester",
       email: "up@example.com",
       passwordHash,
-      role: "buyer",
+      role: "user",
       phone: "07700 900999",
-      emailVerified: true,
+      emailVerified: new Date(),
     },
   });
 
@@ -437,9 +437,9 @@ async function main() {
         name: b.name,
         email: b.email,
         passwordHash,
-        role: "buyer",
+        role: "user",
         phone: b.phone,
-        emailVerified: true,
+        emailVerified: new Date(),
       },
     });
     buyers.push(buyer);
@@ -457,7 +457,7 @@ async function main() {
       passwordHash: adminHash,
       role: "admin",
       phone: "020 7946 0001",
-      emailVerified: true,
+      emailVerified: new Date(),
     },
   });
   console.log("  ✓ admin@trishulhub.com (password: SecureAdminPass123!)");
@@ -501,6 +501,18 @@ async function main() {
   // 4. Properties (skip if already exist to keep idempotent)
   let createdCount = 0;
   let existingCount = 0;
+
+  const cityRegionMap: Record<string, string> = {};
+  for (const loc of locationData) {
+    if (loc.type === "city") {
+      cityRegionMap[loc.name] = loc.region;
+    }
+  }
+  const featuredIndices = new Set<number>();
+  while (featuredIndices.size < 3) {
+    featuredIndices.add(Math.floor(Math.random() * PROPERTIES.length));
+  }
+
   for (const [i, p] of PROPERTIES.entries()) {
     const existing = await db.property.findFirst({
       where: { title: p.title, address: p.address },
@@ -534,24 +546,43 @@ async function main() {
         price: p.price,
         listingType: p.listingType,
         propertyType: p.propertyType,
+        pricePeriod: p.listingType === "rent" ? "pcm" : undefined,
         bedrooms: p.bedrooms,
         bathrooms: p.bathrooms,
         receptionRooms: p.receptionRooms,
+        size: null,
+        epcRating: p.epcRating,
+        councilTaxBand: String.fromCharCode(65 + Math.floor(Math.random() * 8)),
+        tenure: p.propertyType === "flat" ? "Leasehold" : "Freehold",
         address: p.address,
         postcode: p.postcode,
         city: p.city,
+        region: cityRegionMap[p.city] ?? null,
         latitude: lat,
         longitude: lng,
-        epcRating: p.epcRating,
         features: JSON.stringify(p.features),
+        customFeatures: null,
         status: p.status,
         isNewBuild: p.isNewBuild,
         hasGarden: p.hasGarden,
         hasParking: p.hasParking,
+        featured: featuredIndices.has(i),
         viewCount: Math.floor(Math.random() * 200) + 10,
         enquiryCount: Math.floor(Math.random() * 15),
       },
     });
+
+    // Track status change if not draft
+    if (p.status !== "draft") {
+      await db.statusChange.create({
+        data: {
+          propertyId: property.id,
+          oldStatus: "draft",
+          newStatus: p.status,
+          changedBy: agent.id,
+        },
+      });
+    }
 
     // Attach 3-5 sample images
     const numImages = 3 + Math.floor(Math.random() * 3);
@@ -616,19 +647,99 @@ async function main() {
     const agentIds = [...new Set(someProps.map((p) => p.agentId))];
     for (const [i, agentId] of agentIds.entries()) {
       try {
+        const prop = someProps[i % someProps.length];
         await db.review.create({
           data: {
+            propertyId: prop.id,
             agentId,
             userId: buyers[i % buyers.length].id,
             rating: 4 + (i % 2),
             comment: i % 2 === 0
               ? "Excellent service from start to finish. Highly recommended."
               : "Very professional and responsive throughout the process.",
+            approved: true,
           },
         });
       } catch {}
     }
-    console.log("  ✓ Sample favourites, messages, and reviews created");
+    // Viewing Requests
+    if (someProps[0]) {
+      try {
+        await db.viewingRequest.create({
+          data: {
+            propertyId: someProps[0].id,
+            name: "Olivia Brown",
+            email: "olivia@example.com",
+            phone: "07700 900222",
+            preferredDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            preferredTime: "10:00",
+            notes: "Looking forward to viewing this property",
+            status: "pending",
+          },
+        });
+        await db.viewingRequest.create({
+          data: {
+            propertyId: someProps[1]?.id || someProps[0].id,
+            name: "Daniel Jones",
+            email: "daniel@example.com",
+            phone: "07700 900333",
+            preferredDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            preferredTime: "14:30",
+            status: "confirmed",
+            confirmedBy: "Admin User",
+            confirmedAt: new Date(),
+          },
+        });
+      } catch {}
+    }
+
+    // Inquiries
+    try {
+      if (someProps[0]) {
+        await db.inquiry.create({
+          data: {
+            propertyId: someProps[0].id,
+            name: "John Smith",
+            email: "john@example.com",
+            phone: "07700 900444",
+            subject: "Property enquiry",
+            message: "I am interested in this property. Is it still available?",
+            status: "new",
+            source: "website",
+          },
+        });
+      }
+      if (someProps[1]) {
+        await db.inquiry.create({
+          data: {
+            propertyId: someProps[1].id,
+            name: "Amy Wilson",
+            email: "amy@example.com",
+            phone: "07700 900555",
+            subject: "Viewing request",
+            message: "I would like to arrange a viewing for this property.",
+            status: "read",
+            source: "website",
+          },
+        });
+      }
+      if (someProps[2]) {
+        await db.inquiry.create({
+          data: {
+            propertyId: someProps[2].id,
+            name: "Robert Taylor",
+            email: "robert@example.com",
+            phone: "07700 900666",
+            subject: "Price query",
+            message: "Is the price negotiable? I am very interested in making an offer.",
+            status: "replied",
+            source: "email",
+          },
+        });
+      }
+    } catch {}
+
+    console.log("  ✓ Sample favourites, messages, reviews, viewing requests, and inquiries created");
   }
 
   console.log("\n✅ Seed complete!\n");

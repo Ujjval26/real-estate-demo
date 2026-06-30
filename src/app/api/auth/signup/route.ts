@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         passwordHash,
         role,
         phone: phone || null,
-        emailVerified: false,
+        emailVerified: null,
       },
       select: {
         id: true,

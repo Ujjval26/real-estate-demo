@@ -63,6 +63,13 @@ export async function POST(req: NextRequest) {
   const slug = body.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") +
     "-" + Math.random().toString(36).slice(2, 8);
 
+  const images = body.images?.length
+    ? body.images.map((img: { url: string; sortOrder: number }) => ({
+        imageUrl: img.url,
+        sortOrder: img.sortOrder,
+      }))
+    : [];
+
   const property = await db.property.create({
     data: {
       agentId: user.id,
@@ -72,27 +79,40 @@ export async function POST(req: NextRequest) {
       price: parseInt(body.price),
       listingType: body.listingType,
       propertyType: body.propertyType,
+      pricePeriod: body.pricePeriod || null,
       bedrooms: parseInt(body.bedrooms),
       bathrooms: parseInt(body.bathrooms),
       receptionRooms: parseInt(body.receptionRooms || "1"),
+      size: body.size ? parseInt(body.size) : null,
+      epcRating: body.epcRating || null,
+      councilTaxBand: body.councilTaxBand || null,
+      tenure: body.tenure || null,
       address: body.address,
       postcode: body.postcode,
       city: body.city,
+      region: body.region || null,
       status: body.status || "draft",
+      featured: body.featured || false,
       features: JSON.stringify(body.features || []),
+      customFeatures: body.customFeatures || null,
       isNewBuild: body.isNewBuild || false,
       hasGarden: body.hasGarden || false,
       hasParking: body.hasParking || false,
-      images: body.images?.length
-        ? {
-            create: body.images.map((img: { url: string; sortOrder: number }) => ({
-              imageUrl: img.url,
-              sortOrder: img.sortOrder,
-            })),
-          }
-        : undefined,
+      primaryImage: images.length > 0 ? images[0].imageUrl : null,
+      images: images.length > 0 ? { create: images } : undefined,
     },
   });
+
+  if (body.status && body.status !== "draft") {
+    await db.statusChange.create({
+      data: {
+        propertyId: property.id,
+        oldStatus: "draft",
+        newStatus: body.status,
+        changedBy: user.id,
+      },
+    });
+  }
 
   return NextResponse.json({ property }, { status: 201 });
 }
