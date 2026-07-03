@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { CompareBar } from "@/components/compare-bar";
+import { AgentationProvider } from "@/components/agentation-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +58,7 @@ export default function RootLayout({
         <Toaster />
         <SonnerToaster position="bottom-right" richColors />
         <CompareBar />
+        <AgentationProvider />
       </body>
     </html>
   );
