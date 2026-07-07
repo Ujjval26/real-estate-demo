@@ -297,7 +297,7 @@ export function ListingForm({ initialData }: {
 
           {step === 1 && (
             <>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="bedrooms">Bedrooms</Label>
                   <Input id="bedrooms" type="number" min={0} value={form.bedrooms} onChange={(e) => update("bedrooms", e.target.value)} />

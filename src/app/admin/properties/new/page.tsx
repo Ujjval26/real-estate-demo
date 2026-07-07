@@ -98,7 +98,7 @@ export default function NewPropertyPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label>Bedrooms *</Label>
             <Input required type="number" min="0" value={form.bedrooms} onChange={(e) => set("bedrooms", e.target.value)} />
@@ -146,7 +146,7 @@ export default function NewPropertyPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label>Address *</Label>
             <Input required value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="123 Street Name" />

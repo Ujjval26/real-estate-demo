@@ -397,10 +397,10 @@ export function SearchClient() {
             </div>
           ) : view === "map" ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_400px]">
-              <div className="h-[70vh] overflow-hidden rounded-xl border border-slate-200">
+              <div className="h-[50vh] overflow-hidden rounded-xl border border-slate-200 sm:h-[70vh]">
                 <PropertyMap properties={properties} />
               </div>
-              <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
+              <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1 sm:max-h-[70vh]">
                 {properties.map((p) => (
                   <PropertyCard
                     key={p.id}

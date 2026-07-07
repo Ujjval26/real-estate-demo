@@ -99,13 +99,18 @@ export function SiteHeaderInner({ user }: { user: { name: string; role: string }
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <Link href="/dashboard">
                   <Heart className="mr-1 h-4 w-4" /> Saved
                 </Link>
               </Button>
+              <Button asChild variant="ghost" size="sm" className="sm:hidden">
+                <Link href="/dashboard">
+                  <Heart className="h-4 w-4" />
+                </Link>
+              </Button>
               {(user.role === "agent" || user.role === "admin") && (
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="hidden md:inline-flex">
                   <Link href="/agent">Agent dashboard</Link>
                 </Button>
               )}
@@ -138,29 +143,32 @@ export function SiteHeaderInner({ user }: { user: { name: string; role: string }
 
       {/* Mobile dropdown */}
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white md:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary"
-              >
-                {link.label}
-              </Link>
-            ))}
-            {!user && (
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary"
-              >
-                Log in
-              </Link>
-            )}
-          </nav>
-        </div>
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setMobileOpen(false)} />
+          <div className="relative z-40 border-t border-slate-200 bg-white md:hidden">
+            <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              {!user && (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-primary"
+                >
+                  Log in
+                </Link>
+              )}
+            </nav>
+          </div>
+        </>
       )}
     </header>
   );
