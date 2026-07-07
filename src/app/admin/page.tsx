@@ -77,7 +77,10 @@ export default async function AdminPage() {
               <Link href="/admin/users"><Users className="mr-1 h-4 w-4" /> Manage users</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/admin/listings"><Home className="mr-1 h-4 w-4" /> Manage listings</Link>
+              <Link href="/admin/properties"><Home className="mr-1 h-4 w-4" /> Properties</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/listings"><Building2 className="mr-1 h-4 w-4" /> Listings</Link>
             </Button>
           </div>
         </div>
