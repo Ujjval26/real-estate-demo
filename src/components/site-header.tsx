@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Heart, Home, LogIn, UserPlus, Menu, X } from "lucide-react";
+import { Heart, Home, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -26,14 +26,10 @@ export function AuthHeader() {
         </Link>
         <nav className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm">
-            <Link href="/login">
-              <LogIn className="mr-1 h-4 w-4" /> Log in
-            </Link>
+            <Link href="/login">Log in</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/signup">
-              <UserPlus className="mr-1 h-4 w-4" /> Sign up
-            </Link>
+            <Link href="/signup">Sign up</Link>
           </Button>
         </nav>
       </div>

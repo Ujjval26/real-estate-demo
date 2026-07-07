@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, Home, Eye, MessageSquare, TrendingUp } from "lucide-react";
+import { Plus, Home, Eye, MessageSquare, TrendingUp, Settings } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
@@ -45,11 +45,18 @@ export default async function AgentDashboardPage() {
               Welcome back, {user.name}. Manage your property listings below.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/agent/new">
-              <Plus className="mr-1 h-4 w-4" /> Add listing
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            {user.role === "admin" && (
+              <Button asChild variant="outline">
+                <Link href="/admin/properties"><Settings className="mr-1 h-4 w-4" /> Admin properties</Link>
+              </Button>
+            )}
+            <Button asChild>
+              <Link href="/agent/new">
+                <Plus className="mr-1 h-4 w-4" /> Add listing
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
