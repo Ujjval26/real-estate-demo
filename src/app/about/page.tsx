@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
@@ -29,10 +29,11 @@ const STATS = [
 ];
 
 export default async function AboutPage() {
-  const user = await getCurrentUser();
+  const session = await getSession();
+  const user = session ? { name: session.name, role: session.role } : null;
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      <SiteHeader user={user ? { name: user.name, role: user.role } : null} />
+      <SiteHeader user={user} />
 
       <main className="flex-1">
         <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-700 text-white">
@@ -153,7 +154,7 @@ export default async function AboutPage() {
               {
                 title: "Everyone Else",
                 description: "Mortgage calculators, stamp duty tools, agent reviews, and neighbourhood guides — all in one place.",
-                image: "https://images.unsplash.com/photo-1582407947092-045ec3212580?w=400&h=250&fit=crop",
+                image: "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=400&h=250&fit=crop",
               },
             ].map((item) => (
               <div key={item.title} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -172,27 +173,6 @@ export default async function AboutPage() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-
-        <section className="border-t border-slate-200 bg-slate-50 py-12">
-          <div className="mx-auto max-w-3xl px-4 text-center">
-            <h2 className="text-xl font-bold text-slate-900">A note on this demo</h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              This site is a demonstration project. Property listings are sample
-              data, agent details are fictional, and no real transactions take
-              place. If you&apos;d like to learn how the platform was built,
-              check out the open-source code on{" "}
-              <a
-                href="https://github.com/Ujjval26/real-estate-demo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline underline-offset-2 hover:text-primary/80"
-              >
-                GitHub
-              </a>
-              .
-            </p>
           </div>
         </section>
       </main>

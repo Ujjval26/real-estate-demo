@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { db } from "./db";
 import type { UserRole } from "@/types";
 
@@ -103,7 +104,7 @@ export async function getSession(): Promise<SessionPayload | null> {
  * Return the current user's database record (or null if logged out).
  * Useful in Server Components / Route Handlers to access the full user.
  */
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
   const user = await db.user.findUnique({
@@ -119,7 +120,7 @@ export async function getCurrentUser() {
     },
   });
   return user;
-}
+});
 
 /**
  * Require that a user is logged in. Throws an Error with a clear code if not.
