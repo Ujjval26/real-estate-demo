@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Suspense, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Heart, Home, LogIn, UserPlus, Menu, X } from "lucide-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -53,9 +53,20 @@ const NAV_LINKS = [
  * Main site navbar with brand, links, and auth-aware user menu.
  * Renders a sticky header that collapses into a slide-out sheet on mobile.
  */
-export function SiteHeader({ user }: { user: { name: string; role: string } | null }) {
+export function SiteHeaderInner({ user }: { user: { name: string; role: string } | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  function isActive(href: string) {
+    const base = href.split("?")[0];
+    const param = new URLSearchParams(href.split("?")[1] || "");
+    if (pathname !== base) return false;
+    if (param.has("listingType")) {
+      return searchParams.get("listingType") === param.get("listingType");
+    }
+    return true;
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -80,7 +91,7 @@ export function SiteHeader({ user }: { user: { name: string; role: string } | nu
               size="sm"
               className={cn(
                 "text-sm font-medium text-slate-700 hover:text-primary",
-                pathname === link.href.split("?")[0] && "text-primary",
+                isActive(link.href) && "text-primary",
               )}
             >
               <Link href={link.href}>{link.label}</Link>
@@ -156,5 +167,13 @@ export function SiteHeader({ user }: { user: { name: string; role: string } | nu
         </div>
       )}
     </header>
+  );
+}
+
+export function SiteHeader(props: { user: { name: string; role: string } | null }) {
+  return (
+    <Suspense>
+      <SiteHeaderInner {...props} />
+    </Suspense>
   );
 }

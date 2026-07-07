@@ -24,7 +24,7 @@ export function HomeHeroSearch() {
   }
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-xl">
+    <div className="rounded-2xl bg-white p-4 shadow-xl text-slate-900">
       <div className="flex shrink-0 overflow-hidden rounded-md border border-slate-200">
         <button
           onClick={() => setListingType("sale")}
