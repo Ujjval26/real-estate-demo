@@ -317,7 +317,7 @@ export function SearchClient() {
               <SlidersHorizontal className="mr-1 h-4 w-4" /> Filters
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] overflow-y-auto">
+          <SheetContent side="left" className="w-[80vw] overflow-y-auto sm:max-w-[300px]">
             <div className="mt-6">
               <h2 className="mb-4 text-sm font-semibold">Filters</h2>
               {FiltersContent}
@@ -345,7 +345,7 @@ export function SearchClient() {
             </p>
             <div className="flex items-center gap-2">
               <Select value={sort} onValueChange={setSort}>
-                <SelectTrigger className="h-8 w-[170px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 w-[130px] text-xs sm:w-[170px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {SORT_OPTIONS.map((o) => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
@@ -397,10 +397,7 @@ export function SearchClient() {
             </div>
           ) : view === "map" ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_400px]">
-              <div className="h-[50vh] overflow-hidden rounded-xl border border-slate-200 sm:h-[70vh]">
-                <PropertyMap properties={properties} />
-              </div>
-              <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1 sm:max-h-[70vh]">
+              <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1 sm:max-h-[70vh] lg:col-start-2">
                 {properties.map((p) => (
                   <PropertyCard
                     key={p.id}
@@ -408,6 +405,9 @@ export function SearchClient() {
                     compact
                   />
                 ))}
+              </div>
+              <div className="h-[50vh] overflow-hidden rounded-xl border border-slate-200 sm:h-[70vh] lg:col-start-1 lg:row-start-1">
+                <PropertyMap properties={properties} />
               </div>
             </div>
           ) : (

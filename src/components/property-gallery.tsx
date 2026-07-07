@@ -77,7 +77,7 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
             <button
               key={i}
               onClick={() => setActive(i)}
-              className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 ${
+              className={`relative h-12 w-20 shrink-0 overflow-hidden rounded-md border-2 sm:h-16 sm:w-24 ${
                 i === active ? "border-primary" : "border-transparent hover:border-slate-300"
               }`}
             >

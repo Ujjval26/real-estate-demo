@@ -177,7 +177,7 @@ export default async function PropertyPage({
             {/* Property flags */}
             <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6">
               <h2 className="text-lg font-semibold text-slate-900">Property specifics</h2>
-              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                 <div className="flex items-center gap-2">
                   <TreePine className="h-4 w-4 text-slate-400" />
                   Garden: <span className="font-medium">{property.hasGarden ? "Yes" : "No"}</span>

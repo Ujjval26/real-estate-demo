@@ -69,7 +69,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
           {/* Sidebar */}
           <aside>
-            <nav className="sticky top-20 space-y-1 rounded-xl border border-slate-200 bg-white p-2">
+            <nav className="space-y-1 rounded-xl border border-slate-200 bg-white p-2 lg:sticky lg:top-20">
               {navItems.map((item) => (
                 <Link
                   key={item.href}

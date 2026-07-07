@@ -82,7 +82,7 @@ export default function AdminLocationsPage() {
               <th className="px-4 py-3 font-medium text-slate-600">Name</th>
               <th className="px-4 py-3 font-medium text-slate-600">Postcode</th>
               <th className="px-4 py-3 font-medium text-slate-600">Region</th>
-              <th className="px-4 py-3 font-medium text-slate-600">Type</th>
+              <th className="hidden px-4 py-3 font-medium text-slate-600 sm:table-cell">Type</th>
               <th className="px-4 py-3 font-medium text-slate-600">Actions</th>
             </tr>
           </thead>
@@ -97,7 +97,7 @@ export default function AdminLocationsPage() {
                   <td className="px-4 py-3 font-medium text-slate-900">{loc.name}</td>
                   <td className="px-4 py-3 text-slate-600">{loc.postcode}</td>
                   <td className="px-4 py-3 text-slate-600">{loc.region}</td>
-                  <td className="px-4 py-3">
+                  <td className="hidden px-4 py-3 sm:table-cell">
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium capitalize text-slate-600">
                       {loc.type}
                     </span>

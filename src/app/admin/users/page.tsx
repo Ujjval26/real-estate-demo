@@ -110,7 +110,7 @@ export default function AdminUsersPage() {
               <th className="px-4 py-3 font-medium text-slate-600">Name</th>
               <th className="px-4 py-3 font-medium text-slate-600">Email</th>
               <th className="px-4 py-3 font-medium text-slate-600">Role</th>
-              <th className="px-4 py-3 font-medium text-slate-600">Joined</th>
+              <th className="hidden px-4 py-3 font-medium text-slate-600 sm:table-cell">Joined</th>
               <th className="px-4 py-3 font-medium text-slate-600">Actions</th>
             </tr>
           </thead>
@@ -139,7 +139,7 @@ export default function AdminUsersPage() {
                       <option value="admin">Admin</option>
                     </select>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="hidden px-4 py-3 text-xs text-slate-500 sm:table-cell">{new Date(u.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => deleteUser(u.id, u.name)}

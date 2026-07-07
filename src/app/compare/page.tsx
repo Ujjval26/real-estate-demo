@@ -69,7 +69,7 @@ export default async function ComparePage({
           </Card>
         ) : (
           <div className="mt-6 overflow-x-auto">
-            <div className="min-w-[700px]">
+            <div className="min-w-[500px] sm:min-w-[700px]">
               {/* Header row: images + remove buttons */}
               <div className="grid grid-cols-[180px_repeat(auto-fit,minmax(200px,1fr))] gap-3">
                 <div></div>

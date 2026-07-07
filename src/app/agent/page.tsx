@@ -122,7 +122,7 @@ export default async function AgentDashboardPage() {
           ) : (
             <div className="divide-y divide-slate-100">
               {properties.map((p) => (
-                <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-slate-50">
+                <div key={p.id} className="flex items-start gap-4 p-4 hover:bg-slate-50 sm:items-center">
                   <div className="h-16 w-20 shrink-0 overflow-hidden rounded-md bg-slate-100">
                     {p.images[0] ? (
                        
@@ -156,7 +156,7 @@ export default async function AgentDashboardPage() {
                       {p.viewCount} views · {p._count.messages + p._count.viewingRequests} enquiries
                     </p>
                   </div>
-                  <Button asChild size="sm" variant="outline">
+                  <Button asChild size="sm" variant="outline" className="mt-2 shrink-0 sm:mt-0">
                     <Link href={`/agent/${p.id}`}>Edit</Link>
                   </Button>
                 </div>

@@ -157,9 +157,9 @@ export default function AdminViewingsPage() {
                 <tr>
                   <th className="px-4 py-3 font-medium text-slate-600">Property</th>
                   <th className="px-4 py-3 font-medium text-slate-600">Requester</th>
-                  <th className="px-4 py-3 font-medium text-slate-600">Email</th>
+                  <th className="hidden px-4 py-3 font-medium text-slate-600 sm:table-cell">Email</th>
                   <th className="px-4 py-3 font-medium text-slate-600">Date</th>
-                  <th className="px-4 py-3 font-medium text-slate-600">Time</th>
+                  <th className="hidden px-4 py-3 font-medium text-slate-600 md:table-cell">Time</th>
                   <th className="px-4 py-3 font-medium text-slate-600">Status</th>
                 </tr>
               </thead>
@@ -190,11 +190,11 @@ export default function AdminViewingsPage() {
                         {v.property.title}
                       </td>
                       <td className="px-4 py-3 text-slate-700">{v.name}</td>
-                      <td className="px-4 py-3 text-slate-600">{v.email}</td>
+                      <td className="hidden px-4 py-3 text-slate-600 sm:table-cell">{v.email}</td>
                       <td className="px-4 py-3 text-xs text-slate-500">
                         {formatDate(v.preferredDate)}
                       </td>
-                      <td className="px-4 py-3 text-xs text-slate-500">
+                      <td className="hidden px-4 py-3 text-xs text-slate-500 md:table-cell">
                         {formatTime(v.preferredTime)}
                       </td>
                       <td className="px-4 py-3">

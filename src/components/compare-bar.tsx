@@ -113,7 +113,7 @@ export function CompareBar() {
                   <img src={item.cover} alt="" className="h-full w-full object-cover" />
                 )}
               </div>
-              <span className="max-w-[140px] truncate text-xs text-slate-700">
+              <span className="max-w-[100px] truncate text-xs text-slate-700 sm:max-w-[140px]">
                 {item.title}
               </span>
               <button
